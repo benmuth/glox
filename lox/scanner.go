@@ -1,7 +1,5 @@
 package lox
 
-import "github.com/go-playground/locales/currency"
-
 type Scanner struct {
 	// the source code
 	source string
