@@ -20,6 +20,9 @@ func (itpr *Interpreter) RunFile(fileName string) error {
 		return err
 	}
 	itpr.Run(content)
+	if itpr.hadError {
+		os.Exit(65)
+	}
 	return nil
 }
 
@@ -34,6 +37,7 @@ func (itpr *Interpreter) RunPrompt() {
 			break
 		}
 		itpr.Run(line)
+		itpr.hadError = false
 	}
 }
 
