@@ -1,5 +1,7 @@
 package lox
 
+import "github.com/go-playground/locales/currency"
+
 type Scanner struct {
 	// the source code
 	source string
@@ -29,6 +31,7 @@ func (s *Scanner) scanTokens(itpr *Interpreter) []Token {
 func (s *Scanner) scanToken(itpr *Interpreter) {
 	c := s.advance()
 
+	type_ := 0
 	switch c {
 	case '(':
 		s.addToken(LEFT_PAREN)
@@ -50,12 +53,52 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
+	case '!':
+		if s.match('=') {
+			type_ = BANG_EQUAL
+		} else {
+			type_ = BANG
+		}
+		s.addToken(type_)
+	case '=':
+		if s.match('=') {
+			type_ = EQUAL_EQUAL
+		} else {
+			type_ = EQUAL
+		}
+		s.addToken(type_)
+	case '<':
+		if s.match('=') {
+			type_ = LESS_EQUAL
+		} else {
+			type_ = LESS
+		}
+		s.addToken(type_)
+	case '>':
+		if s.match('=') {
+			type_ = GREATER_EQUAL
+		} else {
+			type_ = GREATER
+		}
+		s.addToken(type_)
 	default:
 		err := itpr.error(s.line, "Unexpected character.")
 		if err != nil {
 			panic("TODO: Handle error")
 		}
 	}
+}
+
+func (s *Scanner) match(expected byte) bool {
+	if s.isAtEnd() {
+		return false
+	}
+	if s.source[s.current] != expected {
+		return false
+	}
+
+	s.current++
+	return true
 }
 
 // advance moves the current position of the scanner forward and returns the
