@@ -14,11 +14,11 @@ func NewScanner(source string) *Scanner {
 }
 
 // scanTokens reads the source into a list of tokens
-func (s *Scanner) scanTokens() []Token {
+func (s *Scanner) scanTokens(itpr *Interpreter) []Token {
 	for !s.isAtEnd() {
 		// We are at the beginning of the next lexeme.
 		s.start = s.current
-		s.scanToken()
+		s.scanToken(itpr)
 	}
 	s.tokens = append(s.tokens, Token{EOF, "", nil, s.line})
 	return s.tokens
@@ -26,7 +26,7 @@ func (s *Scanner) scanTokens() []Token {
 
 // scanToken advances the scanner, consuming the source code one character at
 // a time
-func (s *Scanner) scanToken() {
+func (s *Scanner) scanToken(itpr *Interpreter) {
 	c := s.advance()
 
 	switch c {
@@ -50,6 +50,11 @@ func (s *Scanner) scanToken() {
 		s.addToken(SEMICOLON)
 	case '*':
 		s.addToken(STAR)
+	default:
+		err := itpr.error(s.line, "Unexpected character.")
+		if err != nil {
+			panic("TODO: Handle error")
+		}
 	}
 }
 
