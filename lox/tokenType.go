@@ -1,5 +1,6 @@
 package lox
 
+// These represent the type of the token
 const (
 	// Single-character tokens.
 	LEFT_PAREN = iota
@@ -50,6 +51,8 @@ const (
 	EOF
 )
 
+// Given the type of a token, this helps get the name of the token.
+// Mostly for debugging.
 var tokenNames map[int]string = map[int]string{
 	// Single-character tokens.
 	1:  "LEFT_PAREN",
