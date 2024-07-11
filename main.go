@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 )
@@ -12,17 +14,45 @@ func main() {
 		fmt.Println("Usage: jlox [script]")
 		os.Exit(64)
 	} else if len(args) == 1 {
-		runFile(args[0])
+		err := runFile(args[0])
+		if err != nil {
+			fmt.Println("Couldn't read script contents")
+		}
 	} else {
 		runPrompt()
 	}
 }
 
-func runFile(fileName string) {
+// runFile runs a glox script in a file
+func runFile(fileName string) error {
 	fmt.Println(fileName)
-	panic("TODO: implement")
+	content, err := os.ReadFile(fileName)
+	if err != nil {
+		return err
+	}
+	run(content)
+	return nil
 }
 
+// runPrompt runs glox interactively
 func runPrompt() {
-	panic("TODO: implement")
+	scanner := bufio.NewScanner(os.Stdin)
+	for {
+		fmt.Printf("> ")
+		scanner.Scan()
+		line := scanner.Bytes()
+		if len(line) == 0 {
+			break
+		}
+		run(line)
+	}
+}
+
+// run actually runs the interpreter
+func run(content []byte) {
+	tokens := bytes.Split(content, []byte{' ', '\n', '\t', '\r'})
+
+	for _, token := range tokens {
+		fmt.Println(string(token))
+	}
 }
