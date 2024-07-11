@@ -81,6 +81,22 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 			type_ = GREATER
 		}
 		s.addToken(type_)
+	case '/':
+		if s.match('/') {
+			// A comment goes until the end of the line.
+			// We don't want to add these tokens.
+			// We also don't want to consume the new line here, because when it's
+			// consumed, we increment the line counter.
+			for s.peek() != '\n' && !s.isAtEnd() {
+				s.advance()
+			}
+		} else {
+			s.addToken(SLASH)
+		}
+	case ' ', '\r', '\t':
+		// Ignore whitespace
+	case '\n':
+		s.line++
 	default:
 		err := itpr.error(s.line, "Unexpected character.")
 		if err != nil {
@@ -89,6 +105,8 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 	}
 }
 
+// match checks if the current character matches expected. If it does, the
+// character is consumed.
 func (s *Scanner) match(expected byte) bool {
 	if s.isAtEnd() {
 		return false
@@ -99,6 +117,14 @@ func (s *Scanner) match(expected byte) bool {
 
 	s.current++
 	return true
+}
+
+// peek looks ahead one character without consuming it.
+func (s *Scanner) peek() byte {
+	if s.isAtEnd() {
+		return 0
+	}
+	return s.source[s.current]
 }
 
 // advance moves the current position of the scanner forward and returns the
