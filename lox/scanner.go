@@ -20,7 +20,7 @@ func (s *Scanner) scanTokens(itpr *Interpreter) []Token {
 		s.start = s.current
 		s.scanToken(itpr)
 	}
-	s.tokens = append(s.tokens, Token{EOF, "", nil, s.line})
+	s.tokens = append(s.tokens, Token{EOF, "", "", s.line})
 	return s.tokens
 }
 
@@ -95,12 +95,35 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 		// Ignore whitespace
 	case '\n':
 		s.line++
+	case '"':
+		s.string(itpr)
 	default:
 		err := itpr.error(s.line, "Unexpected character.")
 		if err != nil {
 			panic("TODO: Handle error")
 		}
 	}
+}
+
+func (s *Scanner) string(itpr *Interpreter) {
+	for s.peek() != '"' && !s.isAtEnd() {
+		if s.peek() == '\n' {
+			s.line++
+		}
+		s.advance()
+	}
+
+	if s.isAtEnd() {
+		itpr.error(s.line, "Unterminated string.")
+		return
+	}
+
+	// consume the closing "
+	s.advance()
+
+	// trim the surrounding quotes
+	value := s.source[s.start+1: s.current-1]
+	s.addTokenLiteral(STRING, value)
 }
 
 // match checks if the current character matches expected. If it does, the
@@ -135,11 +158,11 @@ func (s *Scanner) advance() byte {
 
 // addToken adds the current token to the list of parsed tokens
 func (s *Scanner) addToken(type_ int) {
-	s.addTokenLiteral(type_, nil)
+	s.addTokenLiteral(type_, "")
 }
 
 // TODO: figure out what literals are for
-func (s *Scanner) addTokenLiteral(type_ int, literal error) {
+func (s *Scanner) addTokenLiteral(type_ int, literal string) {
 	text := s.source[s.start:s.current]
 	s.tokens = append(s.tokens,
 		Token{type_: type_,

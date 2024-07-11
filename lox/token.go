@@ -10,12 +10,12 @@ type Token struct {
 	lexeme string
 	// TODO: figure out what Object literal is
 	// final Object literal;
-	literal error
+	literal string
 	// the line number the Token was found on
 	line int
 }
 
 func (t Token) String() string {
 	// TODO: check whether this fulfills the Stringer interface
-	return fmt.Sprintf("%s %s %e", tokenNames[t.type_], t.lexeme, t.literal)
+	return fmt.Sprintf("%s %s %s", tokenNames[t.type_], t.lexeme, t.literal)
 }
