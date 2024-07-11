@@ -1,33 +1,5 @@
 package lox
 
-// package com.craftinginterpreters.lox;
-
-// import java.util.ArrayList;
-// import java.util.HashMap;
-// import java.util.List;
-// import java.util.Map;
-
-// import static com.craftinginterpreters.lox.TokenType.*;
-
-// class Scanner {
-//   private final String source;
-//   private final List<Token> tokens = new ArrayList<>();
-//   Scanner(String source) {
-//     this.source = source;
-//   }
-// }
-
-// List<Token> scanTokens() {
-//     while (!isAtEnd()) {
-//       // We are at the beginning of the next lexeme.
-//       start = current;
-//       scanToken();
-//     }
-
-//     tokens.add(new Token(EOF, "", null, line));
-//     return tokens;
-//   }
-
 type Scanner struct {
 	// the source code
 	source string
@@ -41,6 +13,7 @@ func NewScanner(source string) *Scanner {
 	return &Scanner{source: source}
 }
 
+// scanTokens reads the source into a list of tokens
 func (s *Scanner) scanTokens() []Token {
 	for !s.isAtEnd() {
 		// We are at the beginning of the next lexeme.
@@ -51,8 +24,56 @@ func (s *Scanner) scanTokens() []Token {
 	return s.tokens
 }
 
+// scanToken advances the scanner, consuming the source code one character at
+// a time
 func (s *Scanner) scanToken() {
-	panic("TODO: not implemented")
+	c := s.advance()
+
+	switch c {
+	case '(':
+		s.addToken(LEFT_PAREN)
+	case ')':
+		s.addToken(RIGHT_PAREN)
+	case '{':
+		s.addToken(LEFT_BRACE)
+	case '}':
+		s.addToken(RIGHT_BRACE)
+	case ',':
+		s.addToken(COMMA)
+	case '.':
+		s.addToken(DOT)
+	case '-':
+		s.addToken(MINUS)
+	case '+':
+		s.addToken(PLUS)
+	case ';':
+		s.addToken(SEMICOLON)
+	case '*':
+		s.addToken(STAR)
+	}
+}
+
+// advance moves the current position of the scanner forward and returns the
+// character found there
+func (s *Scanner) advance() byte {
+	currChar := s.source[s.current]
+	s.current++
+	return currChar
+}
+
+// addToken adds the current token to the list of parsed tokens
+func (s *Scanner) addToken(type_ int) {
+	s.addTokenLiteral(type_, nil)
+}
+
+// TODO: figure out what literals are for
+func (s *Scanner) addTokenLiteral(type_ int, literal error) {
+	text := s.source[s.start:s.current]
+	s.tokens = append(s.tokens,
+		Token{type_: type_,
+			lexeme:  text,
+			literal: literal,
+			line:    s.line})
 }
 
 func (s *Scanner) isAtEnd() bool {

@@ -11,7 +11,7 @@ type Token struct {
 	// TODO: figure out what Object literal is
 	// final Object literal;
 	literal error
-	// the line number for
+	// the line number the Token was found on
 	line int
 }
 
