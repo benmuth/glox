@@ -1,6 +1,8 @@
 package lox
 
-import "strconv"
+import (
+	"strconv"
+)
 
 var keywords map[string]int = map[string]int{
 	"and":    AND,
@@ -109,6 +111,8 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 			for s.peek() != '\n' && !s.isAtEnd() {
 				s.advance()
 			}
+		} else if s.match('*') {
+			s.blockComment(itpr)
 		} else {
 			s.addToken(SLASH)
 		}
@@ -193,6 +197,29 @@ func (s *Scanner) string(itpr *Interpreter) {
 	s.addTokenLiteral(STRING, value)
 }
 
+func (s *Scanner) blockComment(itpr *Interpreter) {
+	nestCount := 1
+	for nestCount > 0 {
+		for (s.peek() != '*' && s.peek() != '/') && !s.isAtEnd() {
+			s.advance()
+		}
+		if s.isAtEnd() {
+			itpr.error(s.line, "Unterminated block comment")
+			break
+		}
+		if s.match('*') {
+			if s.match('/') {
+				nestCount--
+			}
+		}
+		if s.match('/') {
+			if s.match('*') {
+				nestCount++
+			}
+		}
+	}
+}
+
 // match checks if the current character matches expected. If it does, the
 // character is consumed.
 func (s *Scanner) match(expected byte) bool {
@@ -207,7 +234,7 @@ func (s *Scanner) match(expected byte) bool {
 	return true
 }
 
-// peek looks ahead one character without consuming it.
+// peek looks at the current character without consuming it.
 func (s *Scanner) peek() byte {
 	if s.isAtEnd() {
 		return 0
@@ -215,6 +242,7 @@ func (s *Scanner) peek() byte {
 	return s.source[s.current]
 }
 
+// peekNext looks at the next character without consuming it
 func (s *Scanner) peekNext() byte {
 	if s.current+1 >= len(s.source) {
 		return 0
@@ -244,7 +272,7 @@ func (s *Scanner) advance() byte {
 
 // addToken adds the current token to the list of parsed tokens
 func (s *Scanner) addToken(type_ int) {
-	s.addTokenLiteral(type_, "")
+	s.addTokenLiteral(type_, nil)
 }
 
 func (s *Scanner) addTokenLiteral(type_ int, literal any) {

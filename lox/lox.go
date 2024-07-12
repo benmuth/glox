@@ -60,7 +60,7 @@ func (itpr *Interpreter) error(line int, message string) error {
 
 // report writes an error message to stderr
 func (itpr *Interpreter) report(line int, where, message string) error {
-	_, err := io.WriteString(os.Stderr, fmt.Sprintf("[line %d] Error %s: %s", line, where, message))
+	_, err := io.WriteString(os.Stderr, fmt.Sprintf("[line %d] Error %s: %s\n", line, where, message))
 	if err != nil {
 		return err
 	}
