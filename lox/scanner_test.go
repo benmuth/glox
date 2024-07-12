@@ -1,8 +1,9 @@
 package lox
 
 import (
-	"slices"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestScanner(t *testing.T) {
@@ -42,6 +43,11 @@ func TestScanner(t *testing.T) {
 				{STRING, "\"hello world\"", "hello world", 0},
 			},
 			wantError: false},
+		{name: "number", source: `1.25 // number`,
+			want: []Token{
+				{NUMBER, "1.25", 1.25, 0},
+			},
+			wantError: false},
 	}
 
 	for _, tc := range tests {
@@ -53,9 +59,10 @@ func TestScanner(t *testing.T) {
 			tokens = tokens[:len(tokens)-1]
 			// TODO: replace with google cmp package
 			// this skips the EOF char in tokens
-			if !slices.Equal(tc.want, tokens) {
-				t.Errorf("Failed to scan tokens. Want %v, got %v", tc.want, tokens)
+			if diff := cmp.Diff(tc.want, tokens); diff != "" {
+				t.Errorf("Token mismatch: (-want +got):\n%s", diff)
 			}
+
 			if tc.wantError != itpr.hadError {
 				t.Errorf("Expected error: %v, got error: %v", tc.wantError, itpr.hadError)
 			}

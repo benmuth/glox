@@ -1,5 +1,26 @@
 package lox
 
+import "strconv"
+
+var keywords map[string]int = map[string]int{
+	"and":    AND,
+	"class":  CLASS,
+	"else":   ELSE,
+	"false":  FALSE,
+	"for":    FOR,
+	"fun":    FUN,
+	"if":     IF,
+	"nil":    NIL,
+	"or":     OR,
+	"print":  PRINT,
+	"return": RETURN,
+	"super":  SUPER,
+	"this":   THIS,
+	"true":   TRUE,
+	"var":    VAR,
+	"while":  WHILE,
+}
+
 type Scanner struct {
 	// the source code
 	source string
@@ -97,12 +118,58 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 		s.line++
 	case '"':
 		s.string(itpr)
+	case 'o':
+		if s.match('r') {
+			s.addToken(OR)
+		}
 	default:
-		err := itpr.error(s.line, "Unexpected character.")
-		if err != nil {
-			panic("TODO: Handle error")
+		if isDigit(c) {
+			s.number(itpr)
+		} else if isAlpha(c) {
+			s.identifier(itpr)
+		} else {
+			err := itpr.error(s.line, "Unexpected character.")
+			if err != nil {
+				panic("TODO: Handle error")
+			}
 		}
 	}
+}
+
+func (s *Scanner) identifier(itpr *Interpreter) {
+	for isAlphaNumeric(s.peek()) {
+		s.advance()
+	}
+
+	text := s.source[s.start:s.current]
+	type_, ok := keywords[text]
+
+	if !ok {
+		type_ = IDENTIFIER
+	}
+
+	s.addToken(type_)
+}
+
+func (s *Scanner) number(itpr *Interpreter) {
+	for isDigit(s.peek()) {
+		s.advance()
+	}
+
+	if s.peek() == '.' && isDigit(s.peekNext()) {
+		s.advance()
+
+		for isDigit(s.peek()) {
+			s.advance()
+		}
+	}
+
+	parsedFloat, err := strconv.ParseFloat(s.source[s.start:s.current], 32)
+	if err != nil {
+		// TODO: error handling
+		panic(err)
+	}
+	s.addTokenLiteral(NUMBER, parsedFloat)
 }
 
 func (s *Scanner) string(itpr *Interpreter) {
@@ -122,7 +189,7 @@ func (s *Scanner) string(itpr *Interpreter) {
 	s.advance()
 
 	// trim the surrounding quotes
-	value := s.source[s.start+1: s.current-1]
+	value := s.source[s.start+1 : s.current-1]
 	s.addTokenLiteral(STRING, value)
 }
 
@@ -148,6 +215,25 @@ func (s *Scanner) peek() byte {
 	return s.source[s.current]
 }
 
+func (s *Scanner) peekNext() byte {
+	if s.current+1 >= len(s.source) {
+		return 0
+	}
+	return s.source[s.current+1]
+}
+
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func isAlpha(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isDigit(c) || isAlpha(c)
+}
+
 // advance moves the current position of the scanner forward and returns the
 // character found there
 func (s *Scanner) advance() byte {
@@ -161,14 +247,13 @@ func (s *Scanner) addToken(type_ int) {
 	s.addTokenLiteral(type_, "")
 }
 
-// TODO: figure out what literals are for
-func (s *Scanner) addTokenLiteral(type_ int, literal string) {
+func (s *Scanner) addTokenLiteral(type_ int, literal any) {
 	text := s.source[s.start:s.current]
 	s.tokens = append(s.tokens,
-		Token{type_: type_,
-			lexeme:  text,
-			literal: literal,
-			line:    s.line})
+		Token{Type_: type_,
+			Lexeme:  text,
+			Literal: literal,
+			Line:    s.line})
 }
 
 func (s *Scanner) isAtEnd() bool {
