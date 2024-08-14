@@ -48,7 +48,7 @@ func (s *Scanner) scanTokens(itpr *Interpreter) []Token {
 }
 
 // scanToken advances the scanner, consuming the source code one character at
-// a time
+// a time.
 func (s *Scanner) scanToken(itpr *Interpreter) {
 	c := s.advance()
 
@@ -104,10 +104,8 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 		s.addToken(type_)
 	case '/':
 		if s.match('/') {
-			// A comment goes until the end of the line.
-			// We don't want to add these tokens.
-			// We also don't want to consume the new line here, because when it's
-			// consumed, we increment the line counter.
+			// A comment goes until the end of the line. We don't want to add tokens in
+			// a comment.
 			for s.peek() != '\n' && !s.isAtEnd() {
 				s.advance()
 			}
@@ -116,16 +114,17 @@ func (s *Scanner) scanToken(itpr *Interpreter) {
 		} else {
 			s.addToken(SLASH)
 		}
-	case ' ', '\r', '\t':
-		// Ignore whitespace
 	case '\n':
 		s.line++
+	case ' ', '\r', '\t': // Ignore other whitespace
 	case '"':
 		s.string(itpr)
 	case 'o':
+		// BUG: figure out whether "orange" is and should be a valid identifier
 		if s.match('r') {
 			s.addToken(OR)
 		}
+		// NOTE: should there be an "AND" identifier?
 	default:
 		if isDigit(c) {
 			s.number(itpr)
@@ -278,7 +277,7 @@ func (s *Scanner) addToken(type_ int) {
 func (s *Scanner) addTokenLiteral(type_ int, literal any) {
 	text := s.source[s.start:s.current]
 	s.tokens = append(s.tokens,
-		Token{Type_: type_,
+		Token{Type: type_,
 			Lexeme:  text,
 			Literal: literal,
 			Line:    s.line})

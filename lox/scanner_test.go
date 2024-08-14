@@ -85,7 +85,6 @@ world"`,
 			tokens := s.scanTokens(itpr)
 			// exclude eof
 			tokens = tokens[:len(tokens)-1]
-			// TODO: replace with google cmp package
 			// this skips the EOF char in tokens
 			if diff := cmp.Diff(tc.want, tokens); diff != "" {
 				t.Errorf("Token mismatch: (-want +got):\n%s", diff)

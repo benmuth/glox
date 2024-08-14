@@ -2,20 +2,20 @@ package lox
 
 import "fmt"
 
-// Token stores the data for tokens
+// Token stores the data for tokens.
 type Token struct {
-	// type_ is the value of the "enum" for the Token
-	Type_ int
-	// a lexeme is the smallest unit of text that's meaningful to lox
+	// Type is the value of the "enum" for the Token.
+	Type int
+	// A Lexeme is the smallest unit of text that's meaningful to lox.
 	Lexeme string
-	// TODO: figure out what Object literal is
-	// final Object literal;
+	// Literal is the value of the Type, if the Type can have different values,
+	// like strings or floats.
 	Literal any
-	// the line number the Token was found on
+	// Line is the line number the Token was found on.
 	Line int
 }
 
 func (t Token) String() string {
 	// TODO: check whether this fulfills the Stringer interface
-	return fmt.Sprintf("%s %s %s", tokenNames[t.Type_], t.Lexeme, t.Literal)
+	return fmt.Sprintf("%s %s %s", tokenNames[t.Type], t.Lexeme, t.Literal)
 }

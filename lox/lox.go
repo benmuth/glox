@@ -1,3 +1,6 @@
+// Package lox implements the lox programming language, as described in
+// Crafting Interpreters, by Robert Nystrom.
+
 package lox
 
 import (
