@@ -1,13 +1,13 @@
 package lox
 
 type Binary struct {
-	left     any
+	left     Expression
 	operator Token
-	right    any
+	right    Expression
 }
 
 type Grouping struct {
-	expression any
+	expression Expression
 }
 
 type Literal struct {
@@ -16,5 +16,9 @@ type Literal struct {
 
 type Unary struct {
 	operator Token
-	right    any
+	right    Expression
+}
+
+type Expression interface {
+	String() string
 }
